@@ -160,4 +160,4 @@ gestalt-loop-mirror/
 
 ## License
 
-MIT © EDENOFLUX
+MIT © Luci 逻辑喵 / EDENOFLUX

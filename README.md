@@ -90,6 +90,10 @@ scripts/
 - **躯体一律写成推测。** 不是每个人都会提供身体反应，所以渲染层统一用「可能会……」措辞
 - **不是诊断工具。** 这是自我观察的镜子，不替代心理咨询
 
+## 作者
+
+**Luci 逻辑喵**（[@EDENOFLUX](https://github.com/EDENOFLUX)）
+
 ## License
 
 MIT，见 [LICENSE](LICENSE)。`assets/engine/` 下的交互引擎亦为 MIT。
