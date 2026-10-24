@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>格式塔镜映 · Gestalt Loop Mirror</title>
+<style>
+  :root {
+    --bg: #fafafa; --panel: #ffffff; --ink: #1f2430; --muted: #6b7280;
+    --line: #d8dee9; --accent: #3b6ea5; --fix: #d1495b; --fix-bg: #fdeef0;
+    --stage: #e8eef5;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+         background: var(--bg); color: var(--ink); line-height: 1.6; }
+  header { padding: 28px 32px 12px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  .wrap { display:flex; flex-wrap:wrap; gap:24px; padding: 8px 32px 40px; }
+  .card { background: var(--panel); border:1px solid var(--line); border-radius:14px;
+          padding:18px 20px; flex:1 1 420px; min-width:360px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .card h2 { font-size:15px; margin:0 0 10px; color:var(--accent); }
+  svg { width:100%; height:auto; display:block; }
+  .legend { font-size:12px; color:var(--muted); margin-top:8px; }
+  .legend b { color: var(--fix); }
+  #detail { margin: 0 32px 48px; background: var(--panel); border:1px solid var(--line);
+            border-radius:14px; padding:16px 20px; font-size:14px; }
+  #detail h3 { margin:0 0 8px; font-size:14px; color:var(--accent); }
+  .tri { display:grid; grid-template-columns: repeat(4,1fr); gap:10px; margin-top:10px; }
+  .tri div { background: var(--stage); border-radius:8px; padding:10px; font-size:13px; }
+  .tri b { display:block; color:var(--muted); font-size:11px; margin-bottom:3px; }
+  .fixbox { margin-top:10px; background: var(--fix-bg); border-left:3px solid var(--fix);
+            padding:8px 12px; border-radius:0 8px 8px 0; font-size:13px; }
+  .hint { color:var(--muted); font-size:12px; }
+  .hit { cursor:pointer; transition: opacity .15s; }
+  .hit:hover { opacity:.7; }
+  .parse-sec { margin: 8px 32px 40px; background: var(--panel); border:1px solid var(--line);
+               border-radius:14px; padding:18px 20px; }
+  .parse-sec h2 { font-size:15px; margin:0 0 12px; color:var(--accent); }
+  #rawText { width:100%; min-height:90px; border:1px solid var(--line); border-radius:10px;
+             padding:10px 12px; font-family:inherit; font-size:14px; resize:vertical; }
+  .parse-actions { display:flex; gap:10px; align-items:center; margin:10px 0; flex-wrap:wrap; }
+  .parse-actions button { background:var(--accent); color:#fff; border:none; border-radius:8px;
+                          padding:8px 14px; font-size:13px; cursor:pointer; }
+  .parse-actions button:disabled { background:#aab6c4; cursor:not-allowed; }
+  .parse-grid { display:flex; flex-wrap:wrap; gap:20px; }
+  .parse-grid > div { flex:1 1 360px; min-width:320px; }
+  .parse-grid h3 { font-size:13px; color:var(--muted); margin:0 0 8px; }
+  #parseJson { background:#f4f6f9; border:1px solid var(--line); border-radius:8px; padding:10px 12px;
+               font-size:11.5px; max-height:320px; overflow:auto; white-space:pre-wrap; word-break:break-all; }
+  /* —— 碎片罐 + 清晰度 —— */
+  .jar-list { display:flex; flex-direction:column; gap:8px; margin:10px 0; max-height:260px; overflow:auto; }
+  .chip { display:flex; align-items:flex-start; gap:8px; background:var(--stage); border:1px solid var(--line);
+          border-radius:10px; padding:8px 10px; font-size:13px; }
+  .chip .ctext { flex:1 1 auto; }
+  .chip .cmeta { font-size:11px; color:var(--muted); margin-top:2px; }
+  .chip .mtag { display:inline-block; background:var(--fix-bg); color:var(--fix); border-radius:6px;
+                padding:1px 7px; font-size:11px; margin-right:6px; }
+  .chip button { background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:13px; }
+  .chip button:hover { color:var(--fix); }
+  .clarity { margin:10px 0; }
+  .clarity-bar { height:10px; background:#e6ebf1; border-radius:6px; overflow:hidden; margin-top:4px; }
+  .clarity-fill { height:100%; background:linear-gradient(90deg,#9bb8d8,#3b6ea5); width:0%; transition:width .4s; }
+  .clarity-fill.clear { background:linear-gradient(90deg,#7fc8a9,#3a9d6e); }
+  .clarity-note { font-size:12px; margin-top:4px; }
+  .clarity-note.clear { color:#2f7d54; font-weight:600; }
+  /* —— 引导对话路径卡 —— */
+  .today-q { background:#eef4fb; border-left:3px solid var(--accent); border-radius:0 10px 10px 0;
+             padding:12px 14px; font-size:14px; margin:10px 0; }
+  .path-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; margin-top:10px; }
+  .path-card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+  .path-card h4 { margin:0 0 6px; font-size:14px; color:var(--accent); cursor:pointer; }
+  .path-q { font-size:13px; margin:0 0 8px; }
+  .path-follow { font-size:12.5px; color:var(--muted); margin:0; padding-left:18px; display:none; }
+  .path-follow li { margin:4px 0; }
+  .path-card.open .path-follow { display:block; }
+</style>
+</head>
+<body>
+<header>
+  <h1>格式塔镜映 · Gestalt Loop Mirror</h1>
+  <div class="sub">记录 / 镜映无意识自动化（loop = 假性闭合的完形 · 多边形脊分叉 + 双重闭合 · 串接成非对称分形）</div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <h2>① 单环 · 完整闭合多边形（六边脊 + 边扇出 + 双重闭合）</h2>
+    <svg id="single" viewBox="0 0 480 480" role="img" aria-label="single gestalt loop"></svg>
+    <div class="legend">六阶段＝<b>六边形脊</b>（多边形主轴）；<b>易卡住边扇出多线</b>连下一节点＝可能性菜单（红＝防御分支/中断机制，蓝＝真实通过）；<b>粗红+机制名＝本集实走</b>，细红＝菜单(本次未走)。每条线都接上下一节点＝假性闭合。点击任一线看内容。</div>
+  </div>
+  <div class="card">
+    <h2>② 串接 · 时间线大 loop（大多边形容器 + 小环贴顶点外围）</h2>
+    <svg id="chain" viewBox="0 0 480 480" role="img" aria-label="chained gestalt loops"></svg>
+    <div class="legend">整体＝<b>大多边形</b>（时间线容器，边数＝episode 数，每条边＝一个时间区段）；中心留白＝<b>未满足的完形需要</b>；分叉小环<b>贴在多边形顶点外围</b>按时间顺序均布（序号 1→N）；<b>小环大小＝固着强度</b>。点击小环可放大到①。</div>
+  </div>
+</div>
+
+<div id="detail">
+  <h3>镜映面板 · 点击环上分支查看</h3>
+  <div class="hint">回溯镜：把累积的 loop 画出来，主动凝视自己在「哪绕、用什么防御假性闭合」。看见固着本身，就松开一截 retroflection——这是重新选择的入口，不塞「应该」。前瞻旗（适配层）会在你对话时识别「这次正滑向哪条」。每条分支记录四元内容标签：行为 / 想法 / 感受 / 躯体（感受＝情绪，躯体＝身体感觉；躯体为格式塔原生维度，咬 retroflection 模式）。<b>IFS 整合＝方法论借用</b>：防御分支上的「part」标记谁发动了这条防御（M 保护者 / F 紧急救火），叠加在格式塔骨架上、不承诺多部分；中心「未满足完形」＝被流放的需要（直接显示，不再隐藏）。</div>
+  <div id="detail-body" style="margin-top:10px;"></div>
+</div>
+
+<section class="parse-sec">
+  <h2>③ 碎片罐 · 隔三岔五丢一片 → 慢慢积攒 → 逐渐清晰后自动整理串接</h2>
+  <div class="hint" style="margin-bottom:10px">「AI 辅助提取 + 用户确认」流程的离线启发式替身。<b>不用一次写全</b>——想起一片就丢一片（多条可用空行分隔一次性丢），它会跨会话<b>持久积攒</b>在浏览器本地。当碎片足够、模式浮现（清晰度条变绿），工具会<b>自动整理成串接预览</b>，你确认后载入②。</div>
+  <textarea id="rawText" placeholder="想起什么丢什么，例如：&#10;收到没过的通知，我沉默了，没追问。觉得是自己不够好。胸口发紧，很羞耻。忍着没跟人说。&#10;&#10;投简历前反复改，不敢投。觉得自己必须完美匹配才配。焦虑，肩颈发紧。"></textarea>
+  <div class="parse-actions">
+    <button onclick="dropIntoJar()">丢进罐子（积攒）</button>
+    <button onclick="organizeFromJar()" id="orgBtn" disabled>整理并串接（从罐子）</button>
+    <button onclick="loadChainToMain()" id="loadBtn" disabled>载入为串接图（替换②）</button>
+    <button onclick="appendChainToMain()" id="appendBtn" disabled>追加到串接图</button>
+    <button onclick="copyParseJson()" id="copyBtn" disabled>复制 JSON</button>
+    <button onclick="clearJar()" style="background:#c9d2dc">清空罐子</button>
+    <span class="hint" id="parseHint"></span>
+  </div>
+  <div class="clarity">
+    <div class="hint">清晰度（碎片数 + 主导机制占比）：<span id="clarityPct">0%</span></div>
+    <div class="clarity-bar"><div class="clarity-fill" id="clarityFill"></div></div>
+    <div class="clarity-note" id="clarityNote">罐子还空着——去丢第一片。</div>
+  </div>
+  <div class="jar-list" id="jarList"></div>
+  <div class="parse-grid">
+    <div>
+      <h3>整理预览（时间线大 loop，按时间串接）</h3>
+      <svg id="parseChainPreview" viewBox="0 0 480 480" role="img" aria-label="parsed chain preview"></svg>
+      <div class="legend">每条碎片＝一个分叉小环，按丢入时间串接；容器边数＝碎片数。点击小环放大到①。</div>
+    </div>
+    <div>
+      <h3>串接结果（JSON 草稿，请逐条确认/修改）</h3>
+      <pre id="parseJson"></pre>
+    </div>
+  </div>
+  <div id="parseSummary" class="hint" style="margin-top:10px"></div>
+</section>
+
+<section class="parse-sec">
+  <h2>④ 文本解读 · 框架结论 → 一段人话（给被镜映的人看）</h2>
+  <div class="hint" style="margin-bottom:10px">框架跑完（图出来后），这里把 loop 里的四元、卡点边、中断机制、IFS part、中心未满足完形，翻译成自然语言。注意：与③「碎片罐」（文本→草稿串接）方向相反——这是「框架→叙述」。</div>
+  <div class="parse-actions">
+    <label>解读对象：</label>
+    <select id="narrateTarget">
+      <option value="single">单环（行动前转向自身·原型）</option>
+      <option value="chain">串接全景（职场/关系/创作/身体）</option>
+    </select>
+    <button onclick="runNarrate()">生成文本解读</button>
+  </div>
+  <div id="narrateOut" style="margin-top:14px; font-size:14px; line-height:1.8;"></div>
+</section>
+
+<section class="parse-sec">
+  <h2>⑤ 开放引导对话 · 不替你下结论，推你走向不同的路径</h2>
+  <div class="hint" style="margin-bottom:10px">从③碎片罐里读素材，用格式塔框架 + IFS 的开放提问，把探索往不同方向推开——<b>身体 / 没走的路 / 哪个 part 在说话 / 未满足的需要 / 停在循环的哪步</b>，以及条件性方向（内摄来源·投射回收·转向自身对外·融合边界）。点路径卡标题展开追问。这是引导，不是诊断。</div>
+  <div class="parse-actions">
+    <button onclick="renderGuide()">生成今日引导</button>
+    <span class="hint" id="guideHint"></span>
+  </div>
+  <div class="today-q" id="guideToday">点「生成今日引导」，从你的碎片罐里长出一问。</div>
+  <div class="path-grid" id="guidePaths"></div>
+</section>
+
+<!-- 核心引擎（可独立抽取上传 GitHub，零依赖） -->
+<script src="gestalt-loop.js"></script>
+<script src="gestalt-parse.js"></script>
+<script src="gestalt-narrate.js"></script>
+<script src="gestalt-journal.js"></script>
+<script src="gestalt-guide.js"></script>
+<script>
+/* 镜映面板回调（宿主页面提供，引擎点击时调用） */
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function roleLabel(role) {
+  var m = { manager:'Manager 管理者', firefighter:'Firefighter 救火者', exile:'Exile 流放者' };
+  return role ? (m[role] || role) : '—';
+}
+function partLabel(p) {
+  if (!p) return '—';
+  var name = p.name ? '「' + p.name + '」' : '';
+  return name + roleLabel(p.role);
+}
+function showLine(loop, ei, li) {
+  var edge = loop.edges[ei], ln = edge.lines[li];
+  var fromS = STAGES[edge.from], toS = STAGES[edge.to];
+  var isDef = ln.type === 'defense';
+  var body = document.getElementById('detail-body');
+  body.innerHTML =
+    '<div><b>Loop：</b>' + loop.name + ' · 边 <b>' + fromS + ' → ' + toS + '</b></div>' +
+    '<div style="margin-top:6px">' +
+      (isDef
+        ? '<span style="color:var(--fix)">⚠ 防御分支（中断机制）：<b>' + ln.mech + '</b></span> ' +
+          (ln.lit ? '· <b>本集实走</b>' : '· 菜单（本次未走，你的防御选项之一）')
+        : '✓ 真实通过（蓝）' + (ln.lit ? ' · 本集实走' : '')) +
+    '</div>' +
+    (isDef
+        ?         '<div class="tri">' +
+          '<div><b>行为 behavior</b>' + (ln.content ? (ln.content.behavior||'—') : '—') + '</div>' +
+          '<div><b>想法 thought</b>' + (ln.content ? (ln.content.thought||'—') : '—') + '</div>' +
+          '<div><b>感受 feeling</b>' + (ln.content ? (ln.content.feeling||'—') : '—') + '</div>' +
+          '<div><b>躯体 somatic</b>' + (ln.content ? (ln.content.somatic||'—') : '—') + '</div>' +
+        '</div>' +
+        '<div class="tri" style="grid-template-columns: repeat(3,1fr); margin-top:8px">' +
+          '<div><b>主导 part（IFS）</b>' + partLabel(ln.part) + '</div>' +
+          '<div><b>角色 role</b>' + roleLabel(ln.part ? ln.part.role : null) + '</div>' +
+          '<div><b>类型 subtype</b>' + (ln.part && ln.part.subtype ? ln.part.subtype : '—') + '</div>' +
+        '</div>' +
+        '<div class="fixbox"><b>中断机制说明：</b>' + (ln.note||'') + '<br>' +
+          '<span class="hint">双重闭合：这条防御线也把「' + fromS + '」接到「' + toS + '」，环照转＝假性闭合。回溯镜累积多集实走线，才能镜映「我老走这条」。</span></div>'
+      : '<div class="hint" style="margin-top:8px">真实路径＝体验循环正常推进（无防御插入），未假性闭合。</div>');
+}
+
+/* 示例数据（种子，可删/替换） */
+var retroExample = { name: '行动前转向自身', edges: defaultEdges(), meta: { context: '原型', intensity: 0.85 } };
+var chainData = [
+  { name: '行动前转向自身·职场', edges: defaultEdges(), meta: { context: '职场', intensity: 0.92 } },
+  { name: '行动前转向自身·关系', edges: defaultEdges(), meta: { context: '关系', intensity: 0.58 } },
+  { name: '行动前转向自身·创作', edges: defaultEdges(), meta: { context: '创作', intensity: 0.74 } },
+  { name: '行动前转向自身·身体', edges: defaultEdges(), meta: { context: '身体', intensity: 0.81 } }
+];
+
+/* 启动 */
+renderSingleView(document.getElementById('single'), retroExample);
+renderChain(document.getElementById('chain'), chainData);
+var kl = keyLineIdx(retroExample);
+showLine(retroExample, kl.e, kl.l); // 默认展示关键固着（retroflection 本集实走）
+
+/* ===== ③ 碎片罐板块接线 ===== */
+var lastChain = null;
+
+function relTime(ms) {
+  var d = Math.floor((Date.now() - ms) / 1000);
+  if (d < 60) return '刚刚';
+  if (d < 3600) return Math.floor(d / 60) + ' 分钟前';
+  if (d < 86400) return Math.floor(d / 3600) + ' 小时前';
+  return Math.floor(d / 86400) + ' 天前';
+}
+function domMechTag(loop) {
+  var best = null;
+  (loop.edges || []).forEach(function (e) {
+    (e.lines || []).forEach(function (l) {
+      if (l.type === 'defense' && l.lit && l.mech) { if (!best) best = l.mech.split(' ')[1] || l.mech; }
+    });
+  });
+  return best;
+}
+function renderJar() {
+  var frags = FragmentJar.list();
+  var box = document.getElementById('jarList');
+  if (!frags.length) { box.innerHTML = '<div class="hint">罐子还空着。</div>'; return; }
+  box.innerHTML = frags.slice().reverse().map(function (f) {
+    var tag = domMechTag(f.parsed);
+    return '<div class="chip"><div class="ctext">' + escHtml(f.text) +
+      '<div class="cmeta">' + (tag ? '<span class="mtag">' + escHtml(tag) + '</span>' : '') +
+      '强度 ' + (f.parsed.meta ? f.parsed.meta.intensity : '—') + ' · ' + relTime(f.createdAt) + '</div></div>' +
+      '<button title="移除" onclick="removeFrag(\'' + f.id + '\')">✕</button></div>';
+  }).join('');
+}
+function refreshClarity() {
+  var frags = FragmentJar.list();
+  var c = clarityOf(frags);
+  var pct = Math.round(c.score * 100);
+  document.getElementById('clarityPct').textContent = pct + '%';
+  var fill = document.getElementById('clarityFill');
+  fill.style.width = pct + '%';
+  var note = document.getElementById('clarityNote');
+  if (c.clearEnough) {
+    fill.classList.add('clear');
+    note.classList.add('clear');
+    note.textContent = '逐渐清晰了——模式在浮现（主导：' + (c.dominant || '—') + '，占 ' + Math.round(c.dominantRatio * 100) + '%）。可以整理了。';
+  } else {
+    fill.classList.remove('clear');
+    note.classList.remove('clear');
+    note.textContent = frags.length
+      ? ('积攒中：' + frags.length + ' 片。再多几片、或同一模式多出现几次，清晰度会升上来。')
+      : '罐子还空着——去丢第一片。';
+  }
+  return c;
+}
+function dropIntoJar() {
+  var t = document.getElementById('rawText').value.trim();
+  if (!t) { document.getElementById('parseHint').textContent = '先写点什么再丢进去。'; return; }
+  var n = FragmentJar.add(t);
+  document.getElementById('rawText').value = '';
+  renderJar();
+  var c = refreshClarity();
+  document.getElementById('orgBtn').disabled = n === 0;
+  document.getElementById('parseHint').textContent = '已丢入 ' + n + ' 片，罐子现有 ' + FragmentJar.list().length + ' 片。';
+  if (c.clearEnough) organizeFromJar(); // 逐渐清晰 → 自动整理预览
+}
+function removeFrag(id) {
+  FragmentJar.remove(id);
+  renderJar();
+  refreshClarity();
+  document.getElementById('parseHint').textContent = '已移除一片。';
+}
+function clearJar() {
+  if (!FragmentJar.list().length) return;
+  FragmentJar.clear();
+  renderJar();
+  refreshClarity();
+  document.getElementById('parseHint').textContent = '罐子已清空。';
+}
+function organizeFromJar() {
+  var frags = FragmentJar.list();
+  if (!frags.length) { document.getElementById('parseHint').textContent = '罐子空，没法整理。'; return; }
+  lastChain = organizeChain(frags);
+  renderChain(document.getElementById('parseChainPreview'), lastChain.loops);
+  document.getElementById('parseJson').textContent = JSON.stringify(lastChain.loops, null, 2);
+  document.getElementById('loadBtn').disabled = false;
+  document.getElementById('appendBtn').disabled = false;
+  document.getElementById('copyBtn').disabled = false;
+  var p = lastChain._parse;
+  var keys = Object.keys(p.mechCount);
+  var top = keys.length ? keys.sort(function (a, b) { return p.mechCount[b] - p.mechCount[a]; })[0] : null;
+  document.getElementById('parseHint').textContent =
+    '整理出 ' + p.count + ' 条碎片并串接。' + (top ? ('共性机制：' + top + '（' + p.mechCount[top] + ' 次）') : '');
+  document.getElementById('parseSummary').innerHTML = lastChain.loops.map(function (lp, i) {
+    var def = lp.edges.filter(function (e) { return e.lines.some(function (l) { return l.type === 'defense' && l.lit; }); });
+    var mech = def.length ? def[0].lines.filter(function (l) { return l.type === 'defense' && l.lit; })[0].mech : '无防御';
+    return '· 碎片' + (i + 1) + '「' + lp.name + '」强度 ' + lp.meta.intensity + '：' + mech;
+  }).join('<br>');
+}
+function loadChainToMain() {
+  if (!lastChain) return;
+  chainData = lastChain.loops.slice();
+  renderChain(document.getElementById('chain'), chainData);
+  document.getElementById('parseHint').textContent =
+    '已载入为串接图（②）：' + chainData.length + ' 条小环，容器边数＝' + chainData.length + '。点击小环放大到①。';
+  document.getElementById('loadBtn').disabled = true;
+}
+function appendChainToMain() {
+  if (!lastChain) return;
+  lastChain.loops.forEach(function (lp) { chainData.push(lp); });
+  renderChain(document.getElementById('chain'), chainData);
+  document.getElementById('parseHint').textContent =
+    '已追加 ' + lastChain.loops.length + ' 条，串接图现有 ' + chainData.length + ' 条（容器边数＝' + chainData.length + '）。';
+  document.getElementById('appendBtn').disabled = true;
+}
+function copyParseJson() {
+  if (!lastChain) return;
+  var txt = JSON.stringify(lastChain.loops, null, 2);
+  if (navigator.clipboard) navigator.clipboard.writeText(txt);
+  document.getElementById('parseHint').textContent = 'JSON 已复制（若浏览器拦截，请手动选择上方文本框）。';
+}
+/* ===== ⑤ 引导对话板块接线 ===== */
+function renderGuide() {
+  var frags = FragmentJar.list();
+  var ctx = guideContext(frags);
+  document.getElementById('guideToday').textContent = guideToday(frags);
+  var paths = guidePaths(frags);
+  document.getElementById('guidePaths').innerHTML = paths.map(function (p) {
+    return '<div class="path-card" onclick="this.classList.toggle(\'open\')">' +
+      '<h4>' + escHtml(p.title) + '</h4>' +
+      '<p class="path-q">' + escHtml(p.question) + '</p>' +
+      '<ul class="path-follow">' + p.followups.map(function (q) { return '<li>' + escHtml(q) + '</li>'; }).join('') + '</ul>' +
+      '</div>';
+  }).join('');
+  document.getElementById('guideHint').textContent = frags.length
+    ? ('从 ' + frags.length + ' 片碎片读出的方向。点卡标题展开追问。')
+    : '罐子还空——先去③丢几片，引导会更贴你的素材。';
+}
+/* 初始化③罐子视图 */
+renderJar();
+refreshClarity();
+
+function runNarrate() {
+  var sel = document.getElementById('narrateTarget').value;
+  var out = (sel === 'chain')
+    ? narrateChain({ name: '时间线串接（演示：四处转向自身）', loops: chainData })
+    : narrateLoop(retroExample);
+  document.getElementById('narrateOut').innerHTML = out;
+}
+</script>
+</body>
+</html>

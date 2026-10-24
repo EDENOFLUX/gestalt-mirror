@@ -1,0 +1,40 @@
+{
+  "name": "一次「该做却没做」的循环",
+  "title": "格式塔环 · 示例 loop",
+  "subtitle": "六阶段＝六个顶点；红色折线＝边界上被中断的地方，朝内＝收回自身，朝外＝甩向外部",
+  "meta": {
+    "context": "取自 gestalt-loop-mirror 自带示例（不是真实 episode）",
+    "intensity": 0.7,
+    "closures": [100, 100, 30, 0, 10, 20]
+  },
+  "edges": [
+    { "from": 0, "to": 1, "lines": [{ "type": "real", "lit": true, "weight": 100, "why": "需要被注意到，才谈得上处理。" }] },
+    { "from": 1, "to": 2, "lines": [{ "type": "real", "lit": true, "weight": 100, "why": "知道是什么之后，能量开始聚。" }] },
+    { "from": 2, "to": 3, "lines": [
+      { "type": "real", "lit": false, "weight": 25, "why": "本该走的：动员完直接动。" },
+      { "type": "defense", "mech": "introjection 内摄", "bend": "in", "lit": true, "weight": 70,
+        "content": { "behavior": "未经消化地吞下「应该」", "thought": "我必须达到标准；标准是对的", "feeling": "焦虑", "somatic": "被评判的紧绷·肩颈发紧" },
+        "part": { "role": "manager", "subtype": "inner-critic", "name": "严厉监工" },
+        "why": "把外部要求内摄成自我要求，于是卡在动员。" }
+    ] },
+    { "from": 3, "to": 4, "lines": [
+      { "type": "real", "lit": false, "weight": 25, "why": "本该走的：做了就去接触。" },
+      { "type": "defense", "mech": "retroflection 转向自身", "bend": "in", "lit": true, "weight": 85,
+        "content": { "behavior": "拖延 / 转为自我批判", "thought": "我不配主动争取；别惹事，忍着", "feeling": "羞耻", "somatic": "自我攻击的闷痛·胸口发紧" },
+        "part": { "role": "manager", "subtype": "perfectionist", "name": "监工" },
+        "why": "能量不向外做，转向攻击自己，假性闭合。" },
+      { "type": "defense", "mech": "projection 投射", "bend": "out", "lit": false, "weight": 40,
+        "content": { "behavior": "把愤怒甩给别人", "thought": "是别人在逼我；都是他们的错", "feeling": "愤怒", "somatic": "被背叛的灼烧感·胸口发热" },
+        "part": { "role": "firefighter", "subtype": "rage", "name": "喷火者" },
+        "why": "把冲动投到外部对象，回避自身责任。菜单里没走。" }
+    ] },
+    { "from": 4, "to": 5, "lines": [
+      { "type": "real", "lit": false, "weight": 25, "why": "本该走的：接触到就自然收尾。" },
+      { "type": "defense", "mech": "confluence 融合", "bend": "out", "lit": true, "weight": 60,
+        "content": { "behavior": "边界消融、迎合", "thought": "我和别人该一样；别让我独自", "feeling": "被吞没的恐惧", "somatic": "窒息·透不过气·胸口压" },
+        "part": { "role": "manager", "subtype": "pleaser", "name": "迎合者" },
+        "why": "边界消融，与对方融合，回避真实接触。" }
+    ] },
+    { "from": 5, "to": 0, "lines": [{ "type": "real", "lit": true, "weight": 100, "why": "环级闭合：完形没关上，下次从同一个唤起点重演。" }] }
+  ]
+}

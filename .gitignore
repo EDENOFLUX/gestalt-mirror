@@ -1,0 +1,7 @@
+node_modules/
+*.png
+out/
+out-*.html
+.DS_Store
+Thumbs.db
+__pycache__/
